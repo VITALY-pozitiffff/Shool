@@ -44,7 +44,7 @@ public class StudentController {
         }
         return ResponseEntity.ok(foundStudent);
     }
-    // Controller
+
     @GetMapping
     public ResponseEntity<Collection<Student>> findStudents(@RequestParam(required = false) int age) {
         if (age > 0) {
@@ -53,14 +53,5 @@ public class StudentController {
         return ResponseEntity.ok(Collections.emptyList());
     }
 
-// Service
-    public Collection<Student> findByAge(int age) {
-        ArrayList<Student> result = new ArrayList<>();
-        for (Student student : students.values()) {
-            if (student.getAge() == age) {
-                result.add(student);
-            }
-        }
-        return result;
-    }
+
 }
