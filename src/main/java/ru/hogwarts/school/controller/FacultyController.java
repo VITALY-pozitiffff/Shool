@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
 
-import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
+
 
 @RestController
 @RequestMapping("/faculty")
@@ -58,14 +58,5 @@ public class FacultyController {
         return ResponseEntity.ok(Collections.emptyList());
     }
 
-// Service
-    public Collection<Faculty> findByColor(String color) {
-        ArrayList<Faculty> result = new ArrayList<>();
-        for (Faculty faculty : faculties.values()) {
-            if (Objects.equals(faculty.getColor(), color)) {
-                result.add(faculty);
-            }
-        }
-        return result;
-    }
+
 }
