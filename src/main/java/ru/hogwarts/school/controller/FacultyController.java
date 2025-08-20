@@ -1,14 +1,17 @@
 package ru.hogwarts.school.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 
 @RestController
@@ -56,6 +59,19 @@ public class FacultyController {
             return ResponseEntity.ok(facultyService.findByColor(color));
         }
         return ResponseEntity.ok(Collections.emptyList());
+    }
+    @GetMapping("/search")
+    public ResponseEntity<Collection<Faculty>> searchFaculties(@RequestParam String keyword) {
+        return ResponseEntity.ok(facultyService.searchFaculties(keyword));
+    }
+    @GetMapping("/{id}/students")
+    public ResponseEntity<List<Student>> getStudentsFromFaculty(@PathVariable Long id) {
+        try {
+            List<Student> students = facultyService.getStudentsFromFaculty(id);
+            return ResponseEntity.ok(students);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

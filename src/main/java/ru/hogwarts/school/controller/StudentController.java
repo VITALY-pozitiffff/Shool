@@ -1,8 +1,10 @@
 package ru.hogwarts.school.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
@@ -52,6 +54,27 @@ public class StudentController {
         }
         return ResponseEntity.ok(Collections.emptyList());
     }
+    @GetMapping("/by-age-range")
+    public ResponseEntity<Collection<Student>> findStudentsByAgeRange(
+            @RequestParam("min") int min,
+            @RequestParam("max") int max) {
+
+        if (min >= max) { // Проверяем корректность границ
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        return ResponseEntity.ok(studentService.findByAgeRange(min, max));
+    }
+    @GetMapping("/{id}/faculty")
+    public ResponseEntity<?> getFacultyForStudent(@PathVariable Long id) {
+        try {
+            Faculty faculty = studentService.getFacultyForStudent(id);
+            return ResponseEntity.ok(faculty);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 
 }
