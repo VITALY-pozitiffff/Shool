@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 @Entity
 public class Student {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long id;
@@ -16,6 +17,8 @@ public class Student {
         this.name = name;
         this.age = age;
     }
+    public Student() {}
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "faculty_id")

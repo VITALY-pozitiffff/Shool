@@ -21,6 +21,8 @@ public class Faculty {
         this.name = name;
         this.color = color;
     }
+    public Faculty() {}
+
 
     @OneToMany(mappedBy = "faculty", fetch = FetchType.LAZY)
     private Set<Student> students = new HashSet<>();
