@@ -1,23 +1,20 @@
 package ru.hogwarts.school.service;
 
-
 import java.util.Collection;
 
 import java.util.List;
-import java.util.Optional;
 
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import ru.hogwarts.school.model.Faculty;
-import ru.hogwarts.school.model.Student;
-import ru.hogwarts.school.repository.StudentRepository;
+import jakarta.persistence.EntityNotFoundException;import org.springframework.stereotype.Service;import ru.hogwarts.school.model.Faculty;import ru.hogwarts.school.model.Student;import ru.hogwarts.school.repository.StudentRepository;
 
 @Service
 public class StudentService {
 
-    @Autowired
-    private StudentRepository studentRepository;
+
+    private final StudentRepository studentRepository;
+
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
 
     public Student addStudent(Student student) {
         return studentRepository.save(student);
@@ -42,15 +39,14 @@ public class StudentService {
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
+
     public Collection<Student> findByAgeRange(int min, int max) {
         return studentRepository.findByAgeBetween(min, max);
     }
-    public Faculty getFacultyForStudent(Long studentId) {
-        Optional<Student> optionalStudent = studentRepository.findById(studentId);
-        if (!optionalStudent.isPresent()) {
-            throw new EntityNotFoundException("Студенческий профиль не найден.");
-        }
-        return optionalStudent.get().getFaculty();
-    }
 
-}
+    public Faculty getFacultyForStudent(Long studentId) {
+
+
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Студенческий профиль не найден."));
+        return student.getFaculty();
+    }}

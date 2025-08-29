@@ -1,5 +1,6 @@
 package ru.hogwarts.school.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,15 +9,12 @@ import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
+import java.util.Collection;import java.util.Collections;import java.util.List;
 
 @RestController
 @RequestMapping("/faculty")
 public class FacultyController {
+
 
     private final FacultyService facultyService;
 
@@ -33,10 +31,12 @@ public class FacultyController {
         return ResponseEntity.ok(faculty);
     }
 
+    @Operation(summary = "Добавление факультета")
     @PostMapping
     public Faculty createFaculty(@RequestBody Faculty faculty) {
         return facultyService.addFaculty(faculty);
     }
+
 
     @PutMapping
     public ResponseEntity<Faculty> editFaculty(@RequestBody Faculty faculty) {
@@ -52,7 +52,8 @@ public class FacultyController {
         facultyService.deleteFaculty(id);
         return ResponseEntity.ok().build();
     }
-    // Controller
+
+
     @GetMapping
     public ResponseEntity<Collection<Faculty>> findFaculties(@RequestParam(required = false) String color) {
         if (color != null && !color.isBlank()) {
@@ -60,10 +61,12 @@ public class FacultyController {
         }
         return ResponseEntity.ok(Collections.emptyList());
     }
+
     @GetMapping("/search")
     public ResponseEntity<Collection<Faculty>> searchFaculties(@RequestParam String keyword) {
         return ResponseEntity.ok(facultyService.searchFaculties(keyword));
     }
+
     @GetMapping("/{id}/students")
     public ResponseEntity<List<Student>> getStudentsFromFaculty(@PathVariable Long id) {
         try {
@@ -73,6 +76,4 @@ public class FacultyController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
 }

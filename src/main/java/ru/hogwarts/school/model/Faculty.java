@@ -1,10 +1,9 @@
 package ru.hogwarts.school.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.HashSet;import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,6 +15,7 @@ public class Faculty {
     private String name;
     private String color;
 
+
     public Faculty(Long id, String name, String color) {
         this.id = id;
         this.name = name;
@@ -25,6 +25,7 @@ public class Faculty {
 
 
     @OneToMany(mappedBy = "faculty", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Student> students = new HashSet<>();
 
     public Long getId() {
