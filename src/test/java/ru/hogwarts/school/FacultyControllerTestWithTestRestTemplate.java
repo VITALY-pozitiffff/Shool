@@ -6,6 +6,8 @@ package ru.hogwarts.school;
 
 
 
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -14,6 +16,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.repository.FacultyRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +26,15 @@ class FacultyControllerTestWithTestRestTemplate {
     @Autowired
     private TestRestTemplate restTemplate; // Тут мы получаем зависимость через Autowired
 
+    @Autowired
+    private FacultyRepository facultyRepository; // Нужен репозиторий для очистки
+
+    @BeforeEach
+    @Transactional
+    void clearDatabase() {
+        // Очистка таблицы Faculties перед каждым тестом
+        facultyRepository.deleteAll(); // Удаляем все факультеты
+    }
     @Test
     void testGetFaculty() {
         ResponseEntity<Faculty> response = restTemplate.getForEntity("/faculty/1", Faculty.class);
