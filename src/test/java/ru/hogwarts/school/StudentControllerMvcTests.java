@@ -1,7 +1,7 @@
 package ru.hogwarts.school;
 
-
-
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,16 +20,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class StudentControllerMvcTests{
+class StudentControllerMvcTests {
 
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @BeforeEach
+    @Transactional
+    void clearDatabase() {
+        studentRepository.deleteAll();
+    }
+
     @Test
     void testGetStudentInfo() throws Exception {
-        ResultActions result = mvc.perform(get("/student/1").accept(MediaType.APPLICATION_JSON));
+        // Создадим студента для теста
+        Student harryPotter = new Student(null, "Гарри Поттер", 18);
+        studentRepository.save(harryPotter);
+
+        ResultActions result = mvc.
+                perform(get("/student/" + harryPotter.getId()).
+                accept(MediaType.APPLICATION_JSON));
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Гарри Поттер")); // Уточнить по данным
+                .andExpect(jsonPath("$.name").value("Гарри Поттер"));
     }
 
     @Test
@@ -48,22 +65,28 @@ class StudentControllerMvcTests{
 
     @Test
     void testFindStudentsByAge() throws Exception {
-        ResultActions result = mvc.perform(get("/student?age=18").accept(MediaType.APPLICATION_JSON));
+        ResultActions result = mvc.
+                perform(get("/student?age=18").
+                accept(MediaType.APPLICATION_JSON));
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name").exists()); // Ожидание наличия массива учеников
+                .andExpect(jsonPath("$[*].name").exists()); // Ожидание массива учеников
     }
 
     @Test
     void testFindStudentsByAgeRange() throws Exception {
-        ResultActions result = mvc.perform(get("/student/by-age-range?min=17&max=19").accept(MediaType.APPLICATION_JSON));
+        ResultActions result = mvc.
+                perform(get("/student/by-age-range?min=17&max=19").
+                accept(MediaType.APPLICATION_JSON));
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name").exists()); // Ожидание наличия массива учеников
+                .andExpect(jsonPath("$[*].name").exists()); // Ожидание массива учеников
     }
 
     @Test
     void testGetFacultyForStudent() throws Exception {
-        ResultActions result = mvc.perform(get("/student/1/faculty").accept(MediaType.APPLICATION_JSON));
+        ResultActions result = mvc.
+                perform(get("/student/1/faculty").
+                accept(MediaType.APPLICATION_JSON));
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Гриффиндор")); // Уточнить по данным
+                .andExpect(jsonPath("$.name").value("Гриффиндор")); // Название факультета Гарри
     }
 }
