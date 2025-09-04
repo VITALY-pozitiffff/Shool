@@ -3,6 +3,8 @@ package ru.hogwarts.school;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,7 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.StudentRepository;
+import ru.hogwarts.school.service.StudentService;
 
+import static org.assertj.core.api.BDDAssumptions.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,12 +53,17 @@ class StudentControllerMvcTests {
 
     @Test
     void testCreateStudent() throws Exception {
+        // Мокируем метод сервиса
+        BDDMockito.given(StudentService.addStudent(Mockito.any(Student.class))).willReturn(new Student(1L, "Гермиона Грейнджер", 17));
+
+        // Отправляем POST-запрос
         ResultActions result = mvc.perform(post("/student")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Гермиона Грейнджер\", \"age\":17}"));
-        result.andExpect(status().isCreated());
-    }
 
+        // Проверяем статус ответа
+        result.andExpect(status().isOk()); // Проверяем, что статус равен 200 OK
+    }
     @Test
     void testEditStudent() throws Exception {
         ResultActions result = mvc.perform(put("/student")

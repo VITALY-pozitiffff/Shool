@@ -10,13 +10,13 @@ import jakarta.persistence.EntityNotFoundException;import org.springframework.st
 public class StudentService {
 
 
-    private final StudentRepository studentRepository;
+    private static StudentRepository studentRepository = null;
 
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
-    public Student addStudent(Student student) {
+    public static Student addStudent(Student student) {
         return studentRepository.save(student);
     }
 

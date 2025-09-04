@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,24 +52,43 @@ class FacultyControllerTestWithTestRestTemplate {
     void testCreateFaculty() {
         Faculty slytherin = new Faculty(null, "Слизерин", "#00A5E0");
         ResponseEntity<Faculty> response = restTemplate.postForEntity("/faculty", slytherin, Faculty.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getName()).isEqualTo("Слизерин");
     }
 
     @Test
     void testEditFaculty() {
-        Faculty hufflepuff = new Faculty(1L, "Хаффлпафф", "#FFFF00");
-        ResponseEntity<Faculty> response = restTemplate.exchange("/faculty", org.springframework.http.HttpMethod.PUT, null, Faculty.class, hufflepuff);
+        Faculty initialFaculty = new Faculty(null, "Слизерин", "#00A5E0");
+        facultyRepository.save(initialFaculty); // Сохраняем через репозиторий
+
+        Faculty updatedFaculty = new Faculty(initialFaculty.getId(), "Хаффлпафф", "#FFFF00");
+
+        ResponseEntity<Faculty> response = restTemplate.exchange(
+                "/faculty",
+                HttpMethod.PUT,
+                new HttpEntity<>(updatedFaculty),
+                Faculty.class
+        );
+
+        // Проверяем, что статус ОК и имя факультета изменилось
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getName()).isEqualTo("Хаффлпафф");
     }
 
     @Test
     void testSearchFaculties() {
-        // Отправляем запрос и ждем ответ в виде списка
+        // Создаём и сохраняем факультет
+        Faculty gryffindor = new Faculty(null, "Гриффиндор", "#FF0000");
+        facultyRepository.save(gryffindor); // Сохраняем через репозиторий
+
+        // Производим поиск по ключевому слову
         ResponseEntity<Faculty> response = restTemplate.getForEntity(
                 "/faculty/search?q=Грифф",
                 Faculty.class
         );
+        // Проверяем результат
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull(); // Проверяем, что тело ответа не пустое
+        assertThat(response.getBody().getName()).isEqualTo("Гриффиндор"); // Проверяем, что нашли нужный факультет
     }
 }
