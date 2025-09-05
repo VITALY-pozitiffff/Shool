@@ -82,13 +82,18 @@ class FacultyControllerTestWithTestRestTemplate {
         facultyRepository.save(gryffindor); // Сохраняем через репозиторий
 
         // Производим поиск по ключевому слову
-        ResponseEntity<Faculty> response = restTemplate.getForEntity(
-                "/faculty/search?q=Грифф",
-                Faculty.class
+        ResponseEntity<List<Faculty>> response = restTemplate.exchange(
+                "/faculty/search?keyword=Грифф",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Faculty>>() {
+                }
         );
+
         // Проверяем результат
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull(); // Проверяем, что тело ответа не пустое
-        assertThat(response.getBody().getName()).isEqualTo("Гриффиндор"); // Проверяем, что нашли нужный факультет
+        assertThat(response.getBody().size()).isEqualTo(1); // Проверяем, что нашли один факультет
+        assertThat(response.getBody().get(0).getName()).isEqualTo("Гриффиндор"); // Проверяем, что нашли нужный факультет
     }
 }
