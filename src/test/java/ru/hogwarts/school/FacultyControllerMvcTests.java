@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.hogwarts.school.controller.FacultyController;
@@ -33,7 +34,7 @@ class FacultyControllerMvcTests {
     @Autowired
     private MockMvc mvc;
 
-    @Mock
+    @MockitoBean
     private FacultyService facultyService;
 
     @BeforeEach
@@ -63,7 +64,7 @@ class FacultyControllerMvcTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Слизерин\", \"color\":\"#00A5E0\"}"));
 
-        result.andExpect(status().isCreated());
+        result.andExpect(status().isOk());
     }
 
     @Test
