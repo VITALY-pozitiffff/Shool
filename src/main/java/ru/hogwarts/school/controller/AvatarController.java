@@ -1,7 +1,11 @@
 package ru.hogwarts.school.controller;
 
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +29,14 @@ public class AvatarController {
         this.avatarService = avatarService;
     }
 
+    @GetMapping("/page")
+    public ResponseEntity<Page<Avatar>> paginatedAvatars(@RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "10") int size) {
 
+        Pageable paging = PageRequest.of(page, size);
+        Page<Avatar> avatars = avatarService.paginatedAvatars((SpringDataWebProperties.Pageable) paging);
+        return ResponseEntity.ok(avatars);
+    }
     @PostMapping("/upload")
     public ResponseEntity<String> uploadAvatar(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {

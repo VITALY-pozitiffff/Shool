@@ -9,6 +9,15 @@ import jakarta.persistence.EntityNotFoundException;import org.springframework.st
 @Service
 public class StudentService {
 
+    public Long countTotalStudents() {
+        return studentRepository.countTotalStudents();
+    }
+    public Double averageStudentAge() {
+        return studentRepository.averageStudentAge();
+    }
+    public List<Student> lastFiveStudents() {
+        return studentRepository.findLastFiveStudents();
+    }
 
     private static StudentRepository studentRepository = null;
 
