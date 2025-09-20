@@ -1,5 +1,7 @@
 package ru.hogwarts.school.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
@@ -14,23 +16,30 @@ import java.util.Optional;
 public class AvatarService {
 
     private final AvatarRepository avatarRepository;
-    public Page<Avatar> paginatedAvatars(SpringDataWebProperties.Pageable pageable) {
-        return avatarRepository.findAll((Pageable) pageable);
-    }
+    private final Logger logger = LoggerFactory.getLogger(AvatarService.class); // Добавляем логгер
+
     @Autowired
     public AvatarService(AvatarRepository avatarRepository) {
         this.avatarRepository = avatarRepository;
     }
 
+    public Page<Avatar> paginatedAvatars(SpringDataWebProperties.Pageable pageable) {
+        logger.debug("Invoked method paginatedAvatars"); // Логируем вызов метода с уровнем DEBUG
+        return avatarRepository.findAll((Pageable) pageable);
+    }
+
     public Avatar saveAvatar(Avatar avatar) {
+        logger.info("Invoked method saveAvatar"); // Логируем сохранение аватара с уровнем INFO
         return avatarRepository.save(avatar);
     }
 
     public Optional<Avatar> findAvatarById(Long id) {
+        logger.debug("Invoked method findAvatarById with id={}", id); // Логируем получение аватара с уровнем DEBUG
         return avatarRepository.findById(id);
     }
 
     public void deleteAvatar(Long id) {
+        logger.warn("Deleting avatar with id={}", id); // Логируем удаление аватара с уровнем WARN
         avatarRepository.deleteById(id);
     }
 }
