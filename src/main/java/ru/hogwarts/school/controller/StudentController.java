@@ -1,15 +1,18 @@
 package ru.hogwarts.school.controller;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/student")
@@ -18,24 +21,34 @@ public class StudentController {
 
     private final StudentService studentService;
 
+
+    @Autowired // Добавь эту аннотацию!
+    private StudentRepository studentRepository;
+
+
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
+
+
     @GetMapping("/last-five")
     public ResponseEntity<List<Student>> lastFiveStudents() {
         List<Student> students = studentService.lastFiveStudents();
         return ResponseEntity.ok(students);
     }
+
     @GetMapping("/average-age")
     public ResponseEntity<Double> averageStudentAge() {
         Double avgAge = studentService.averageStudentAge();
         return ResponseEntity.ok(avgAge);
     }
+
     @GetMapping("/count")
     public ResponseEntity<Long> totalStudentCount() {
         Long count = studentService.countTotalStudents();
         return ResponseEntity.ok(count);
     }
+
     @GetMapping("{id}")
     public ResponseEntity<Student> getStudentInfo(@PathVariable Long id) {
         Student student = studentService.findStudent(id);
@@ -43,6 +56,29 @@ public class StudentController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(student);
+    }
+
+    @GetMapping("/names-start-with-a")
+    public ResponseEntity<List<String>> getNamesStartingWithA() {
+        List<String> names = studentRepository.findAll()
+                .stream()
+                .map(Student::getName)          // Получаем имена студентов
+                .filter(name -> name.toUpperCase().startsWith("A")) // Фильтруем имена
+                .sorted()                       // Сортируем по алфавиту
+                .collect(Collectors.toList());  // Собираем в список
+
+        return ResponseEntity.ok(names);
+    }
+
+    @GetMapping("/average-age")
+    public ResponseEntity<Double> getAverageAge() {
+        double averageAge = studentRepository.findAll()
+                .stream()
+                .mapToInt(Student::getAge)      // Преобразовываем потоки в числа (возрасты)
+                .average()                      // Вычисляем среднее
+                .orElse(Double.NaN);           // Или выдаём NaN, если пусто
+
+        return ResponseEntity.ok(averageAge);
     }
 
     @PostMapping
@@ -88,5 +124,7 @@ public class StudentController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
 }
 

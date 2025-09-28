@@ -2,14 +2,17 @@ package ru.hogwarts.school.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repository.FacultyRepository;
+import ru.hogwarts.school.repository.StudentRepository;
 import ru.hogwarts.school.service.FacultyService;
 
-import java.util.Collection;import java.util.Collections;import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/faculty")
@@ -18,9 +21,24 @@ public class FacultyController {
 
     private final FacultyService facultyService;
 
+    @Autowired // Добавь эту аннотацию!
+    private FacultyRepository facultyRepository;
+
     public FacultyController(FacultyService facultyService) {
         this.facultyService = facultyService;
     }
+
+    @GetMapping("/longest-faculty-name")
+    public ResponseEntity<String> getLongestFacultyName() {
+        Optional<String> longestName = facultyRepository.findAll()
+                .stream()
+                .map(Faculty::getName)
+                .max(Comparator.comparingInt(String::length));
+
+        return longestName.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
 
     @GetMapping("{id}")
     public ResponseEntity<Faculty> getFacultyInfo(@PathVariable Long id) {
