@@ -12,7 +12,9 @@ import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/student")
@@ -25,10 +27,69 @@ public class StudentController {
     @Autowired // Добавь эту аннотацию!
     private StudentRepository studentRepository;
 
+    private final Object lock = new Object();
+
 
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
+
+
+    @GetMapping("/print-parallel")
+    public void printParallel() {
+        List<Student> students = studentService.getAllStudents();
+
+        if (students.size() < 6) {
+            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
+        }
+
+        // Выведем первых двух студентов прямо в основном потоке
+        for (int i = 0; i < 2; i++) {
+            System.out.println(students.get(i).getName());
+        }
+
+        // Оставшиеся студенты выводятся параллельно
+        IntStream.range(2, 6)
+                .parallel()
+                .forEach(index -> System.out.println(students.get(index).getName()));
+    }
+
+    private void printSynchronized(String name) {
+        synchronized (lock) {
+            System.out.println(name);
+        }
+    }
+    @GetMapping("/print-synchronized")
+    public void printSynchronized() {
+        List<Student> students = studentService.getAllStudents();
+
+        if (students.size() < 6) {
+            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
+        }
+
+
+        // Печатаем первые два имени в основном потоке
+        for (int i = 0; i < 2; i++) {
+            printSynchronized(students.get(i).getName());
+        }
+
+        // Запускаем два параллельных потока для оставшихся четырех имен
+        CompletableFuture.runAsync(() -> {
+            printSynchronized(students.get(2).getName());
+            printSynchronized(students.get(3).getName());
+        });
+
+        CompletableFuture.runAsync(() -> {
+            printSynchronized(students.get(4).getName());
+            printSynchronized(students.get(5).getName());
+        });
+
+        // Ожидаем завершения выполнения обоих потоков
+        CompletableFuture.allOf().join();
+    }
+
+
+
 
 
     @GetMapping("/last-five")
