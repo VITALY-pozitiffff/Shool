@@ -2,6 +2,7 @@ package ru.hogwarts.school.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -79,5 +80,63 @@ public class StudentService {
             return new EntityNotFoundException("Студенческий профиль не найден.");
         });
         return student.getFaculty();
+    }
+
+    public void printStudentsInParallel() {
+        List<Student> students = studentRepository.findAll();
+        if (students.size() < 6) {
+            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
+        }
+
+        // Первое задание: первая пара студентов выводится в основном потоке
+        System.out.println(students.get(0).getName());
+        System.out.println(students.get(1).getName());
+
+        // Второе задание: вторая пара студентов выводится в отдельном потоке
+        CompletableFuture.runAsync(() -> {
+            System.out.println(students.get(2).getName());
+            System.out.println(students.get(3).getName());
+        });
+
+        // Третье задание: третья пара студентов также выводится в другом потоке
+        CompletableFuture.runAsync(() -> {
+            System.out.println(students.get(4).getName());
+            System.out.println(students.get(5).getName());
+        });
+    }
+
+    /**
+     * Синхронизированный вывод списка студентов.
+     */
+    public void printStudentsSynchronized() {
+        List<Student> students = studentRepository.findAll();
+        if (students.size() < 6) {
+            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
+        }
+
+        // Общий объект блокировки
+        Object lock = new Object();
+
+        // Первая пара студентов выводится в основном потоке
+        synchronized (lock) {
+            System.out.println(students.get(0).getName());
+            System.out.println(students.get(1).getName());
+        }
+
+        // Вторая пара студентов выводится в первом дополнительном потоке
+        CompletableFuture.runAsync(() -> {
+            synchronized (lock) {
+                System.out.println(students.get(2).getName());
+                System.out.println(students.get(3).getName());
+            }
+        });
+
+        // Третья пара студентов выводится во втором дополнительном потоке
+        CompletableFuture.runAsync(() -> {
+            synchronized (lock) {
+                System.out.println(students.get(4).getName());
+                System.out.println(students.get(5).getName());
+            }
+        });
     }
 }
