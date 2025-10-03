@@ -1,14 +1,18 @@
 package ru.hogwarts.school.controller;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/student")
@@ -16,19 +20,57 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    @Autowired
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<Student>
+    @GetMapping("/print-parallel")
+    public void printParallel() {
+        studentService.printStudentsInParallel();
+    }
 
-    getStudentInfo(@PathVariable Long id) {
+    @GetMapping("/print-synchronized")
+    public void printSynchronized() {
+        studentService.printStudentsSynchronized();
+    }
+
+    @GetMapping("/last-five")
+    public ResponseEntity<List<Student>> lastFiveStudents() {
+        List<Student> students = studentService.lastFiveStudents();
+        return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/average-age")
+    public Double averageStudentAge() {
+        return studentService.averageStudentAge();
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> totalStudentCount() {
+        Long count = studentService.countTotalStudents();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Student> getStudentInfo(@PathVariable Long id) {
         Student student = studentService.findStudent(id);
         if (student == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(student);
+    }
+
+    @GetMapping("/names-start-with-a")
+    public ResponseEntity<List<String>> getNamesStartingWithA() {
+        List<String> names = studentService.getNamesStartingWithA();
+        return ResponseEntity.ok(names);
+    }
+
+    @GetMapping("/average-age")
+    public ResponseEntity<Double> getAverageAge() {
+        double averageAge = studentService.getAverageAge();
+        return ResponseEntity.ok(averageAge);
     }
 
     @PostMapping
@@ -37,30 +79,42 @@ public class StudentController {
     }
 
     @PutMapping
-    public ResponseEntity<Student> editStudent(@RequestBody Student student) {
+    public ResponseEntity<Student> editStudent(@Valid @RequestBody Student student) {
         Student foundStudent = studentService.editStudent(student);
         if (foundStudent == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         return ResponseEntity.ok(foundStudent);
     }
-    // Controller
+
     @GetMapping
-    public ResponseEntity<Collection<Student>> findStudents(@RequestParam(required = false) int age) {
-        if (age > 0) {
+    public ResponseEntity<Collection<Student>> findStudents(@RequestParam(required = false) Integer age) {
+        if (age != null && age > 0) {
             return ResponseEntity.ok(studentService.findByAge(age));
         }
         return ResponseEntity.ok(Collections.emptyList());
     }
 
-// Service
-    public Collection<Student> findByAge(int age) {
-        ArrayList<Student> result = new ArrayList<>();
-        for (Student student : students.values()) {
-            if (student.getAge() == age) {
-                result.add(student);
-            }
+    @GetMapping("/by-age-range")
+    public ResponseEntity<Collection<Student>> findStudentsByAgeRange(
+            @RequestParam("min") int min,
+            @RequestParam("max") int max) {
+
+        if (min >= max) { // Проверяем корректность границ
+            return ResponseEntity.badRequest().body(Collections.emptyList());
         }
-        return result;
+
+        return ResponseEntity.ok(studentService.findByAgeRange(min, max));
+    }
+
+    @GetMapping("/{id}/faculty")
+    public ResponseEntity<?> getFacultyForStudent(@PathVariable Long id) {
+        try {
+            Faculty faculty = studentService.getFacultyForStudent(id);
+            return ResponseEntity.ok(faculty);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
+
