@@ -20,4 +20,6 @@ Collection<Student> findByAgeBetween(int min, int max);
 
     @Query(value = "SELECT * FROM Student ORDER BY id DESC LIMIT 5", nativeQuery = true)
     List<Student> findLastFiveStudents();
+
+    List<Student> findTop5ByOrderByIdDesc();
 }
