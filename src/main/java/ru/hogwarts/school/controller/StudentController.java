@@ -24,7 +24,7 @@ public class StudentController {
     private final StudentService studentService;
 
 
-    @Autowired // Добавь эту аннотацию!
+    @Autowired
     private StudentRepository studentRepository;
 
     private final Object lock = new Object();

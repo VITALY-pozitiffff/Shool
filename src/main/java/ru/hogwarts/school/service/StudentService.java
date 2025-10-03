@@ -13,6 +13,8 @@ import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.StudentRepository;
 
 @Service
+
+
 public class StudentService {
 
     private final Logger logger = LoggerFactory.getLogger(StudentService.class); // Добавляем логгер
@@ -82,40 +84,35 @@ public class StudentService {
         return student.getFaculty();
     }
 
-    public void printStudentsInParallel() {
-        List<Student> students = studentRepository.findAll();
-        if (students.size() < 6) {
-            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
-        }
 
-        // Первое задание: первая пара студентов выводится в основном потоке
+    public void printStudentsInParallel() {
+        var students = studentRepository.findAll();
+        checkStudentsSize(students);
+
+        // Первую пару студентов выведем сразу в основном потоке
         System.out.println(students.get(0).getName());
         System.out.println(students.get(1).getName());
 
-        // Второе задание: вторая пара студентов выводится в отдельном потоке
+        // Вывод третьей пары студентов в отдельном потоке
         CompletableFuture.runAsync(() -> {
             System.out.println(students.get(2).getName());
             System.out.println(students.get(3).getName());
         });
 
-        // Третье задание: третья пара студентов также выводится в другом потоке
+        // Четвертый поток выводит ещё одну пару студентов
         CompletableFuture.runAsync(() -> {
             System.out.println(students.get(4).getName());
             System.out.println(students.get(5).getName());
         });
     }
 
-    /**
-     * Синхронизированный вывод списка студентов.
-     */
-    public void printStudentsSynchronized() {
-        List<Student> students = studentRepository.findAll();
-        if (students.size() < 6) {
-            throw new IllegalStateException("Требуется минимум шесть студентов для демонстрации примера.");
-        }
 
-        // Общий объект блокировки
-        Object lock = new Object();
+    public void printStudentsSynchronized() {
+        var students = studentRepository.findAll();
+        checkStudentsSize(students);
+
+        // Блокировка для предотвращения конфликтов при доступе к ресурсам
+        var lock = new Object();
 
         // Первая пара студентов выводится в основном потоке
         synchronized (lock) {
@@ -123,7 +120,7 @@ public class StudentService {
             System.out.println(students.get(1).getName());
         }
 
-        // Вторая пара студентов выводится в первом дополнительном потоке
+        // Во втором потоке вторая пара студентов выводится синхронизированно
         CompletableFuture.runAsync(() -> {
             synchronized (lock) {
                 System.out.println(students.get(2).getName());
@@ -131,12 +128,19 @@ public class StudentService {
             }
         });
 
-        // Третья пара студентов выводится во втором дополнительном потоке
+        // Третий поток выводит третью группу студентов
         CompletableFuture.runAsync(() -> {
             synchronized (lock) {
                 System.out.println(students.get(4).getName());
                 System.out.println(students.get(5).getName());
             }
         });
+    }
+
+
+    private void checkStudentsSize(List<Student> students) {
+        if (students.size() < 6) {
+            throw new IllegalArgumentException("Необходимо минимум 6 студентов для отображения.");
+        }
     }
 }
